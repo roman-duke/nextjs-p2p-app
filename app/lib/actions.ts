@@ -23,7 +23,7 @@ const FormSchema = z.object({
   }),
   amount: z.coerce
     .number()
-    .gt(0, { message: 'Please enter an aount greater than ₦0.' }),
+    .gt(0, { message: 'Please enter an amount greater than ₦0.' }),
   status: z.enum(['pending', 'paid'], {
     invalid_type_error: 'Please select an invoice status.'
   }),
@@ -105,7 +105,7 @@ export async function deleteInvoice(id: string) {
   }
 }
 
-const Transfer = FormSchema.omit({ id: true, status: true });
+const Transfer = FormSchema.omit({ id: true, status: true, date: true });
 
 export async function transferFunds(prevState: State, formData: FormData) {
   const validatedFields = Transfer.safeParse({
@@ -121,7 +121,7 @@ export async function transferFunds(prevState: State, formData: FormData) {
   }
 
   const { customerId, amount } = validatedFields.data;
-  const date = new Date().toISOString().split('T')[0];
+  // const date = new Date().toISOString().split('T')[0];
 
   try {
     const updateRecipientPromise = sql`
@@ -137,25 +137,25 @@ export async function transferFunds(prevState: State, formData: FormData) {
       WHERE wallets.id = activeUser.id
     `;
 
-    const editDatePromise = sql`
-      INSERT INTO wallets (date)
-      VALUES (${date})
-    `;
+    // const editDatePromise = sql`
+    //   INSERT INTO wallets (date)
+    //   VALUES (${date})
+    // `;
 
     const data = await Promise.all([
       updateRecipientPromise,
       updateSenderPromise,
-      editDatePromise
+      // editDatePromise
     ]);
 
   } catch(error) {
     return {
-      message: 'Databse Error: Failed to Make Transfer'
+      message: 'Database Error: Failed to Make Transfer'
     }
   }
 
-  revalidatePath('dashboard/wallet');
-  redirect('dashboard/wallet');
+  revalidatePath('/dashboard/wallet');
+  redirect('/dashboard/wallet');
 }
 
 const Fund = FormSchema.omit({ id: true, customerId: true, status: true, date: true })
@@ -209,8 +209,6 @@ export async function authenticate(
 
   async function updateActiveUser() {
     const email = formData.get('email');
-
-    console.log(email);
 
     try {
       await sql`

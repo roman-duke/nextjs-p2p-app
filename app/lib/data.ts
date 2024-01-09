@@ -179,14 +179,13 @@ export async function fetchActiveUser() {
   try {
     const data = await sql<ActiveUser>`
       SELECT
-        activeUser.id,
         activeUser.active_id,
         activeUser.name,
         activeUser.email,
         activeUser.image_url
       FROM activeUser
     `;
-    
+
     const activeUser = data.rows.map((user) => ({
       ...user,
       active_id: user.active_id,

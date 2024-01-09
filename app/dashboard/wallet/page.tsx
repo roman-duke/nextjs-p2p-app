@@ -5,8 +5,11 @@ import { CardSkeleton } from '@/app/ui/skeletons';
 import { fetchActiveUser, fetchWalletById } from '@/app/lib/data';
 import { notFound } from 'next/navigation';
 import { FundWallet, Transfer } from '@/app/ui/invoices/buttons';
+import { unstable_noStore as noStore} from 'next/cache';
 
 export default async function Page() {
+  noStore();
+  
   const activeUserID = await fetchActiveUser();
 
   const walletBalance = await fetchWalletById(activeUserID.active_id);
