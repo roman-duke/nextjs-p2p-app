@@ -15,6 +15,10 @@ async function getUser(email: string): Promise<User | undefined> {
     throw new Error('Failed to fetch user.');
   }
 }
+
+// async function createUser(email: string, password: string) {
+//   const user = await sql
+// }
  
 export const { auth, signIn, signOut } = NextAuth({
   ...authConfig,
@@ -37,5 +41,22 @@ export const { auth, signIn, signOut } = NextAuth({
         return null;
       },
     }),
+
+    // Credentials({
+    //   async authorize(credentials) {
+    //     const parsedCredentials = z
+    //       .object({ email: z.string().email(), password: z.string().min(6) })
+    //       .safeParse(credentials);
+
+    //     if (parsedCredentials.success) {
+    //       const { email, password } = parsedCredentials.data;
+    //       // const user = await createUser(email);
+    //       // if (!user) return null;
+
+    //     }
+
+    //     return null;
+    //   }
+    // })
   ],
 });
