@@ -38,6 +38,7 @@ export async function createInvoice(prevState: State, formData: FormData) {
     amount: formData.get('amount'),
     status: formData.get('status'),
   });
+
   
   if (!validatedFields.success) {
     return {
@@ -45,8 +46,9 @@ export async function createInvoice(prevState: State, formData: FormData) {
       message: 'Missing Fields. Failed to Create Invoice.',
     }
   }
-
+  
   const { customerId, amount, status } = validatedFields.data;
+  console.log(customerId);
   const date = new Date().toISOString().split('T')[0];
   
   try {
@@ -102,13 +104,136 @@ export async function deleteInvoice(id: string) {
     }
   }
 }
+
+const Transfer = FormSchema.omit({ id: true, status: true });
+
+export async function transferFunds(prevState: State, formData: FormData) {
+  const validatedFields = Transfer.safeParse({
+    customerId: formData.get('customerId'),
+    amount: formData.get('amount'),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Missing Fields. Failed to Make Transfer'
+    }
+  }
+
+  const { customerId, amount } = validatedFields.data;
+  const date = new Date().toISOString().split('T')[0];
+
+  try {
+    const updateRecipientPromise = sql`
+      UPDATE wallets
+      SET amount = amount + ${amount}
+      WHERE wallets.id = ${customerId}
+    `;
+
+    const updateSenderPromise = sql`
+      UPDATE wallets
+      SET amount = amount - ${amount}
+      FROM activeUser
+      WHERE wallets.id = activeUser.id
+    `;
+
+    const editDatePromise = sql`
+      INSERT INTO wallets (date)
+      VALUES (${date})
+    `;
+
+    const data = await Promise.all([
+      updateRecipientPromise,
+      updateSenderPromise,
+      editDatePromise
+    ]);
+
+  } catch(error) {
+    return {
+      message: 'Databse Error: Failed to Make Transfer'
+    }
+  }
+
+  revalidatePath('dashboard/wallet');
+  redirect('dashboard/wallet');
+}
+
+const Fund = FormSchema.omit({ id: true, customerId: true, status: true })
+export async function fundWallet(prevState: State, formData: FormData) {
+  const validatedFields = Fund.safeParse({
+    amount: formData.get('amount'),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Missing Fields. Failed to Fund Wallet'
+    }
+  }
+
+  const { amount } = validatedFields.data;
+  const date = new Date().toISOString().split('T')[0];
+
+  try {
+    const updateBalancePromise = sql`
+      UPDATE wallets
+      SET amount = amount + ${amount}
+      FROM activeUser
+      WHERE wallets.id = activeUser.id
+    `;
+
+    const editDatePromise = sql `
+      INSERT INTO wallets (date)
+      VALUES (${date})
+    `;
+
+    const data = await Promise.all([
+      updateBalancePromise,
+      editDatePromise,
+    ]);
+
+  } catch(error) {
+    return {
+      message: 'Database Error: Failed to Fund Wallet'
+    }
+  }
+
+  revalidatePath('/dashboard/wallet');
+  redirect('/dashboard/wallet');
+}
  
 export async function authenticate(
   prevState: string | undefined,
   formData: FormData,
 ) {
+
+  async function updateActiveUser() {
+    const email = formData.get('email');
+
+    try {
+      await sql`
+        INSERT INTO activeUser (active_id, name, email, image_url)
+        SELECT id, name, email, image_url 
+        FROM customers
+        WHERE email = ${String(email)}
+      `;
+    } catch(error) {
+      return {
+        message: 'Databse Error: Failed to Update Active User'
+      }
+    }
+  }
+  
+
   try {
-    await signIn('credentials', formData);
+    const signInPromise = signIn('credentials', formData);
+    const updateActiveUserPromise = updateActiveUser();
+
+    const data = await Promise.all([
+      signInPromise,
+      updateActiveUserPromise,
+    ]);
+
   } catch (error) {
     if (error instanceof AuthError) {
       switch (error.type) {

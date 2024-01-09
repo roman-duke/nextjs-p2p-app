@@ -8,6 +8,9 @@ import {
   LatestInvoiceRaw,
   User,
   Revenue,
+  Wallet,
+  Customer,
+  ActiveUser,
 } from './definitions';
 import { formatCurrency } from './utils';
 
@@ -53,9 +56,6 @@ export async function fetchCardData() {
   noStore();
 
   try {
-    // You can probably combine these into a single SQL query
-    // However, we are intentionally splitting them to demonstrate
-    // how to initialize multiple queries in parallel with JS.
     const invoiceCountPromise = sql`SELECT COUNT(*) FROM invoices`;
     const customerCountPromise = sql`SELECT COUNT(*) FROM customers`;
     const invoiceStatusPromise = sql`SELECT
@@ -84,6 +84,32 @@ export async function fetchCardData() {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch card data.');
   }
+}
+
+export async function fetchWalletDataById(id: string) {
+  noStore();
+
+  try {
+    const data = await sql<Wallet>`
+      SELECT
+        wallets.id,
+        wallets.customer_id,
+        wallet.amount
+      FROM wallets
+      WHERE wallets.id = ${id};  
+    `;
+
+    const wallet = data.rows.map((wallet) => ({
+      ...wallet,
+      amount: wallet.amount,
+    }));
+
+    return wallet[0];
+  } catch(error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch wallet data');
+  }
+
 }
 
 const ITEMS_PER_PAGE = 6;
@@ -170,6 +196,57 @@ export async function fetchInvoiceById(id: string) {
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch invoice.');
+  }
+}
+
+export async function fetchActiveUser() {
+  noStore();
+
+  try {
+    const data = await sql<ActiveUser>`
+      SELECT
+        activeUser.id,
+        activeUser.active_id
+        activeUser.name
+        activeUser.email
+        activeUser.image_url
+      FROM activeUser
+    `;
+
+    const activeUser = data.rows.map((user) => ({
+      ...user,
+      active_id: user.active_id,
+    }));
+    
+    return activeUser[0]
+  } catch(error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch active user')
+  }
+}
+
+export async function fetchWalletById(id: string) {
+  noStore();
+
+  try {
+    const data = await sql<Wallet>`
+      SELECT
+        wallets.id,
+        wallets.customer_id
+        wallets.amount
+      FROM wallets
+      WHERE wallets.id = ${id}
+    `;
+
+    const wallet = data.rows.map((wallet) => ({
+      ...wallet,
+      amount: wallet.amount,
+    }));
+
+    return wallet[0];
+  } catch(error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch wallet.');
   }
 }
 

@@ -16,6 +16,14 @@ export type Customer = {
   image_url: string;
 };
 
+export type ActiveUser = {
+  id: string;
+  active_id: string;
+  name: string;
+  email: string;
+  image_url: string;
+};
+
 export type Invoice = {
   id: string;
   customer_id: string;
@@ -84,3 +92,9 @@ export type InvoiceForm = {
   amount: number;
   status: 'pending' | 'paid';
 };
+
+export type Wallet = {
+  id: string;
+  customer_id: string;
+  amount: number;
+}
