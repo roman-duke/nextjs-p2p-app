@@ -4,6 +4,8 @@ const {
   customers,
   revenue,
   users,
+  activeUser,
+  wallets
 } = require('../app/lib/placeholder-data.js');
 const bcrypt = require('bcrypt');
 
@@ -156,6 +158,84 @@ async function seedRevenue(client) {
     };
   } catch (error) {
     console.error('Error seeding revenue:', error);
+    throw error;
+  }
+}
+
+async function seedWallets(client) {
+  try {
+    await client.sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
+    // Create the "wallets" table if it doesn't exist
+    const createTable = await client.sql`
+    CREATE TABLE IF NOT EXISTS wallets (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    customer_id UUID NOT NULL,
+    amount INT NOT NULL,
+    date DATE NOT NULL 
+  );
+`;
+
+    console.log(`Created "wallets" table`);
+
+    // Insert data into the "wallets" table
+    const insertedWallets = await Promise.all(
+      wallets.map(
+        (wallet) => client.sql`
+        INSERT INTO wallets (id, amount, date)
+        VALUES (${wallet.id}, ${wallet.amount}, ${wallet.date})
+        ON CONFLICT (id) DO NOTHING
+      `,
+      ),
+    );
+
+    console.log(`Seeded ${wallets.length} wallets`);
+
+    return {
+      createTable,
+      wallets: insertedWallets,
+    };
+  } catch (error) {
+    console.log('Error seeding wallets:', error);
+    throw error;
+  }
+}
+
+async function seedActiveUser(client) {
+  try {
+    await client.sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
+
+    // Create the "activeUser" table if it doesn't exist
+    const createTable = await client.sql`
+      CREATE TABLE IF NOT EXISTS activeUser (
+        id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+        active_id UUID NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255) NOT NULL,
+        image_url VARCHAR(255) NOT NULL,
+      );
+    `;
+
+    console.log(`Created "activeUser" table`);
+
+    // Insert data into the "activeUser" table
+    const insertedActiveUser = await Promise.all(
+      activeUser.map(
+        (activeUser) => client.sql`
+        INSERT INTO activeUser (active_id, name, email, image_url)
+        VALUES (${activeUser.active_id}, ${activeUser.name}, ${activeUser.email}, ${activeUser.image_url})
+        ON CONFLICT (id) DO NOTHING;
+      `,
+      ),
+    );
+
+    console.log(`Seeded ${activeUser.length} active user`);
+
+    return {
+      createTable,
+      activeUser: insertedActiveUser,
+    };
+  } catch(error) {
+    console.error('Error seeding active users:', error);
     throw error;
   }
 }
