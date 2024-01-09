@@ -181,7 +181,7 @@ async function seedWallets(client) {
     const insertedWallets = await Promise.all(
       wallets.map(
         (wallet) => client.sql`
-        INSERT INTO wallets (id, amount, date)
+        INSERT INTO wallets (customer_id, amount, date)
         VALUES (${wallet.customer_id}, ${wallet.amount}, ${wallet.date})
         ON CONFLICT (id) DO NOTHING
       `,
