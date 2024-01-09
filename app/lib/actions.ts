@@ -158,7 +158,7 @@ export async function transferFunds(prevState: State, formData: FormData) {
   redirect('dashboard/wallet');
 }
 
-const Fund = FormSchema.omit({ id: true, customerId: true, status: true })
+const Fund = FormSchema.omit({ id: true, customerId: true, status: true, date: true })
 export async function fundWallet(prevState: State, formData: FormData) {
   const validatedFields = Fund.safeParse({
     amount: formData.get('amount'),
@@ -177,19 +177,19 @@ export async function fundWallet(prevState: State, formData: FormData) {
   try {
     const updateBalancePromise = sql`
       UPDATE wallets
-      SET amount = amount + ${amount}
+      SET amount = wallets.amount + ${amount}
       FROM activeUser
-      WHERE wallets.id = activeUser.id
+      WHERE wallets.customer_id = activeUser.active_id
     `;
 
-    const editDatePromise = sql `
-      INSERT INTO wallets (date)
-      VALUES (${date})
-    `;
+    // const editDatePromise = sql`
+    //   INSERT INTO wallets (date)
+    //   VALUES (${date})
+    // `;
 
     const data = await Promise.all([
       updateBalancePromise,
-      editDatePromise,
+      // editDatePromise,
     ]);
 
   } catch(error) {
@@ -210,12 +210,17 @@ export async function authenticate(
   async function updateActiveUser() {
     const email = formData.get('email');
 
+    console.log(email);
+
     try {
       await sql`
-        INSERT INTO activeUser (active_id, name, email, image_url)
-        SELECT id, name, email, image_url 
+        UPDATE activeUser
+        SET active_id = customers.active_id,
+            name = customers.name,
+            email = customers.email,
+            imageURL = customers.imageURL
         FROM customers
-        WHERE email = ${String(email)}
+        WHERE activeUser.email = ${String(email)}
       `;
     } catch(error) {
       return {

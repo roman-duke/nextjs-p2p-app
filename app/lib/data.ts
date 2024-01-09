@@ -86,32 +86,6 @@ export async function fetchCardData() {
   }
 }
 
-export async function fetchWalletDataById(id: string) {
-  noStore();
-
-  try {
-    const data = await sql<Wallet>`
-      SELECT
-        wallets.id,
-        wallets.customer_id,
-        wallet.amount
-      FROM wallets
-      WHERE wallets.id = ${id};  
-    `;
-
-    const wallet = data.rows.map((wallet) => ({
-      ...wallet,
-      amount: wallet.amount,
-    }));
-
-    return wallet[0];
-  } catch(error) {
-    console.error('Database Error:', error);
-    throw new Error('Failed to fetch wallet data');
-  }
-
-}
-
 const ITEMS_PER_PAGE = 6;
 export async function fetchFilteredInvoices(
   query: string,
@@ -206,19 +180,19 @@ export async function fetchActiveUser() {
     const data = await sql<ActiveUser>`
       SELECT
         activeUser.id,
-        activeUser.active_id
-        activeUser.name
-        activeUser.email
+        activeUser.active_id,
+        activeUser.name,
+        activeUser.email,
         activeUser.image_url
       FROM activeUser
     `;
-
+    
     const activeUser = data.rows.map((user) => ({
       ...user,
       active_id: user.active_id,
     }));
-    
-    return activeUser[0]
+  
+    return activeUser[1];
   } catch(error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch active user')
@@ -232,10 +206,10 @@ export async function fetchWalletById(id: string) {
     const data = await sql<Wallet>`
       SELECT
         wallets.id,
-        wallets.customer_id
+        wallets.customer_id,
         wallets.amount
       FROM wallets
-      WHERE wallets.id = ${id}
+      WHERE wallets.customer_id = ${id}
     `;
 
     const wallet = data.rows.map((wallet) => ({
