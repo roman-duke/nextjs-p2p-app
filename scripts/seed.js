@@ -247,6 +247,8 @@ async function main() {
   await seedCustomers(client);
   await seedInvoices(client);
   await seedRevenue(client);
+  await seedWallets(client);
+  await seedActiveUser(client);
 
   await client.end();
 }
