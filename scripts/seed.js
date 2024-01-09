@@ -211,7 +211,7 @@ async function seedActiveUser(client) {
         active_id UUID NOT NULL,
         name VARCHAR(255) NOT NULL,
         email VARCHAR(255) NOT NULL,
-        image_url VARCHAR(255) NOT NULL,
+        image_url VARCHAR(255) NOT NULL
       );
     `;
 
