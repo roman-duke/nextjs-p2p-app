@@ -126,10 +126,10 @@ const customers = [
 
 const activeUser = [
   {
-    active_id: customers[0].id,
+    active_id: customers[1].id,
     name: 'Alex Iwobi',
     email: 'alex@iwobi.com',
-    image_url: customers[0].image_url,
+    image_url: customers[1].image_url,
   }
 ];
 
