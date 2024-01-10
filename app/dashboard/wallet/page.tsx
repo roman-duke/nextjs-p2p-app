@@ -9,8 +9,10 @@ import { unstable_noStore as noStore} from 'next/cache';
 
 export default async function Page() {
   noStore();
-  
+
   const activeUserID = await fetchActiveUser();
+
+  // console.log(activeUserID);
 
   const walletBalance = await fetchWalletById(activeUserID.active_id);
 

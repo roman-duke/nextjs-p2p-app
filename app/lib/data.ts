@@ -191,7 +191,7 @@ export async function fetchActiveUser() {
       active_id: user.active_id,
     }));
   
-    return activeUser[1];
+    return activeUser[0];
   } catch(error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch active user')

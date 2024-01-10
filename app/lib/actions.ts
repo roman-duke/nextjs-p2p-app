@@ -178,8 +178,8 @@ export async function fundWallet(prevState: State, formData: FormData) {
     const updateBalancePromise = sql`
       UPDATE wallets
       SET amount = wallets.amount + ${amount}
-      FROM activeUser
-      WHERE wallets.customer_id = activeUser.active_id
+      FROM activeuser
+      WHERE wallets.customer_id = activeuser.active_id
     `;
 
     // const editDatePromise = sql`
@@ -209,16 +209,17 @@ export async function authenticate(
 
   async function updateActiveUser() {
     const email = formData.get('email');
+    // console.log(email);
 
     try {
       await sql`
-        UPDATE activeUser
+        UPDATE activeuser
         SET active_id = customers.id,
             name = customers.name,
             email = customers.email,
-            imageURL = customers.imageURL
+            image_url = customers.image_url
         FROM customers
-        WHERE activeUser.email = ${String(email)}
+        WHERE customers.email = ${String(email)}
       `;
     } catch(error) {
       return {
@@ -229,12 +230,12 @@ export async function authenticate(
   
 
   try {
+    const updateActiveUserPromise = updateActiveUser;
     const signInPromise = signIn('credentials', formData);
-    const updateActiveUserPromise = updateActiveUser();
 
     const data = await Promise.all([
+      updateActiveUserPromise(),
       signInPromise,
-      updateActiveUserPromise,
     ]);
 
   } catch (error) {
