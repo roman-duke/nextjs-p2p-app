@@ -134,7 +134,7 @@ export async function transferFunds(prevState: State, formData: FormData) {
       UPDATE wallets
       SET amount = amount - ${amount}
       FROM activeUser
-      WHERE wallets.id = activeUser.id
+      WHERE wallets.customer_id = activeUser.active_id
     `;
 
     // const editDatePromise = sql`
@@ -213,7 +213,7 @@ export async function authenticate(
     try {
       await sql`
         UPDATE activeUser
-        SET active_id = customers.active_id,
+        SET active_id = customers.id,
             name = customers.name,
             email = customers.email,
             imageURL = customers.imageURL
