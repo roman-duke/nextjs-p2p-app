@@ -127,7 +127,7 @@ export async function transferFunds(prevState: State, formData: FormData) {
     const updateRecipientPromise = sql`
       UPDATE wallets
       SET amount = amount + ${amount}
-      WHERE wallets.id = ${customerId}
+      WHERE wallets.customer_id = ${customerId}
     `;
 
     const updateSenderPromise = sql`
